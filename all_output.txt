@@ -1,0 +1,121 @@
+To create a website with a search box that connects to the TMDB API and autocompletes TV and series titles, we will need the following files:
+
+1. `package.json`: This file will contain the project metadata and the dependencies required for the project.
+
+2. `server.js`: This file will be the entry point of our application. It will set up the server and handle the API requests.
+
+3. `App.js`: This file will contain the main React component of our application.
+
+4. `SearchBox.js`: This file will contain the SearchBox component that will handle the search functionality.
+
+5. `.env`: This file will contain the environment variables such as the TMDB API key.
+
+Let's start with the `package.json` file:
+
+package.json
+```json
+{
+  "name": "tmdb-autocomplete",
+  "version": "1.0.0",
+  "description": "A website with a search box that connects to the TMDB API and autocompletes TV and series titles",
+  "main": "server.js",
+  "scripts": {
+    "start": "node server.js"
+  },
+  "dependencies": {
+    "express": "^4.17.1",
+    "axios": "^0.21.1",
+    "react": "^17.0.2",
+    "react-dom": "^17.0.2",
+    "react-scripts": "4.0.3"
+  },
+  "devDependencies": {
+    "dotenv": "^8.2.0"
+  }
+}
+```
+
+Next, let's create the `server.js` file:
+
+server.js
+```javascript
+const express = require('express');
+const axios = require('axios');
+require('dotenv').config();
+
+const app = express();
+app.use(express.static('public'));
+
+app.get('/search', async (req, res) => {
+  const query = req.query.q;
+  const response = await axios.get(`https://api.themoviedb.org/3/search/tv?api_key=${process.env.TMDB_API_KEY}&query=${query}`);
+  res.json(response.data.results);
+});
+
+app.listen(8000, () => {
+  console.log('Server is running on port 8000');
+});
+```
+
+Now, let's create the `App.js` file:
+
+App.js
+```javascript
+import React from 'react';
+import SearchBox from './SearchBox';
+
+function App() {
+  return (
+    <div className="App">
+      <h1>TV Series Search</h1>
+      <SearchBox />
+    </div>
+  );
+}
+
+export default App;
+```
+
+Next, let's create the `SearchBox.js` file:
+
+SearchBox.js
+```javascript
+import React, { useState } from 'react';
+import axios from 'axios';
+
+function SearchBox() {
+  const [query, setQuery] = useState('');
+  const [results, setResults] = useState([]);
+
+  const search = async (e) => {
+    e.preventDefault();
+    const response = await axios.get(`/search?q=${query}`);
+    setResults(response.data);
+  };
+
+  return (
+    <div>
+      <form onSubmit={search}>
+        <input type="text" value={query} onChange={(e) => setQuery(e.target.value)} />
+        <button type="submit">Search</button>
+      </form>
+      {results.map((result) => (
+        <div key={result.id}>{result.name}</div>
+      ))}
+    </div>
+  );
+}
+
+export default SearchBox;
+```
+
+Finally, let's create the `.env` file:
+
+.env
+```env
+TMDB_API_KEY=your_tmdb_api_key
+```
+
+Please replace `your_tmdb_api_key` with your actual TMDB API key.
+
+To run the application, you can use the command `npm start`. The application will be served on port 8000.
